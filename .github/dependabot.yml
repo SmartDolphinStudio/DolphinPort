@@ -1,0 +1,30 @@
+version: 2
+updates:
+  # Dart and Flutter packages.
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "dart"
+
+  # Rust crates for the placeholder back-end.
+  - package-ecosystem: "cargo"
+    directory: "/rust"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "rust"
+
+  # GitHub Actions used by the workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "github-actions"

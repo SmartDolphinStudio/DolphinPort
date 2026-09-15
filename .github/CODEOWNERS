@@ -1,0 +1,11 @@
+# Each line is a file pattern followed by one or more owners.
+# Replace the placeholder owner with the real GitHub username or team.
+# Order matters: the last matching pattern takes the most precedence.
+
+*                           @astraeus
+
+# Release and security-sensitive files require the maintainer's review.
+/.github/workflows/         @astraeus
+/android/**/build.gradle    @astraeus
+/SECURITY.md                @astraeus
+/rust/                      @astraeus

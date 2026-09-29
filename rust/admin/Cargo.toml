@@ -1,0 +1,15 @@
+[package]
+name = "dolphinport-admin"
+version = "0.1.0"
+edition = "2021"
+description = "Placeholder for the DolphinPort administrative and security console."
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "dolphinport-admin"
+path = "src/main.rs"
+
+[dependencies]
+# The admin console reuses the same core library as the mobile client.
+dolphinport-core = { path = "../core" }

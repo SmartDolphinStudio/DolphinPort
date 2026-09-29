@@ -1,0 +1,22 @@
+# DolphinPort Rust workspace.
+#
+# Members:
+#   core  — the native library bundled into Android as a shared object and the
+#           owner of local SQLite persistence;
+#   admin — an optional future administrative console that reuses `core`.
+[workspace]
+resolver = "2"
+members = ["core", "admin"]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+publish = false
+
+# Small, optimised native core. Keep unwinding so an unexpected Rust panic is
+# contained rather than aborting the host process across the FFI boundary.
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = "s"
+panic = "unwind"

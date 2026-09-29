@@ -1,0 +1,14 @@
+# Gradle user state (the wrapper jar and gradlew scripts must be committed)
+/.gradle/
+**/.kotlin/
+/captures/
+/local.properties
+
+# Generated registrant
+GeneratedPluginRegistrant.java
+
+# Signing material and secrets (never publicly share your keystore).
+# See https://flutter.dev/to/reference-keystore
+key.properties
+**/*.keystore
+**/*.jks

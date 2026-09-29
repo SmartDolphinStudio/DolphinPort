@@ -1,0 +1,30 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+
+// 统一所有插件模块的编译 SDK 为 37（Android 17），避免个别插件声明
+// 更低版本时与 build-tools 37 的 aapt2 不一致而导致构建失败。
+// 注意：必须在下面的 evaluationDependsOn(":app") 之前注册 afterEvaluate。
+subprojects {
+    afterEvaluate { proj ->
+        if (proj.hasProperty("android")) {
+            proj.android.compileSdk = 37
+        }
+    }
+}
+
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

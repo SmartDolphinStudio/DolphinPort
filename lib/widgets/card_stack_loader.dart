@@ -28,9 +28,7 @@ class _CardStackLoaderState extends State<CardStackLoader>
 
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: Duration(
-      milliseconds: (_frameCount / _frameRate * 1000).round(),
-    ),
+    duration: Duration(milliseconds: (_frameCount / _frameRate * 1000).round()),
   )..repeat();
 
   @override
@@ -65,9 +63,9 @@ class _CardStackLoaderState extends State<CardStackLoader>
         animation: _controller,
         builder: (context, _) {
           final index = (_controller.value * _frameCount).floor().clamp(
-                0,
-                _frameCount - 1,
-              );
+            0,
+            _frameCount - 1,
+          );
           return Image.asset(
             _framePath(index),
             gaplessPlayback: true,

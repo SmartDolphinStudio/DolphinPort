@@ -32,7 +32,7 @@ Future<bool?> showCardVerifyDialog(BuildContext context) {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Verify identity',
+                    'Demo verification',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -40,7 +40,8 @@ Future<bool?> showCardVerifyDialog(BuildContext context) {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => _authenticateWithDevice(context, dialogContext),
+                    onTap: () =>
+                        _authenticateWithDevice(context, dialogContext),
                     child: const Text(
                       'Screen lock',
                       style: TextStyle(
@@ -86,7 +87,17 @@ Future<bool?> showCardVerifyDialog(BuildContext context) {
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(dialogContext, true),
+                  onPressed: () {
+                    if (passwordController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Enter a non-empty demo password'),
+                        ),
+                      );
+                      return;
+                    }
+                    Navigator.pop(dialogContext, true);
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     shape: RoundedRectangleBorder(

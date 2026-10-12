@@ -44,11 +44,11 @@ transaction and chart series comes from deterministic, in-memory data.
 
 ## Requirements
 
-- Flutter 3.44 (stable) with Dart 3.12 or newer
+- Flutter 3.44.6 (stable) with Dart 3.12 or newer
 - JDK 17
-- Android SDK with platform 37 and build tools 37.0.0
+- Android SDK with platform 37 and build tools 37.0.0; NDK 28.2.13676358
 - A device or emulator running Android 7.0 (API 24) or newer
-- Rust 1.80 or newer (only needed for the placeholder service)
+- Rust toolchain in rust/rust-toolchain.toml and cargo-ndk 4.1.2 (required for native SQLite)
 
 ## Getting Started
 
@@ -140,3 +140,6 @@ do not use it to handle genuine financial data.
 ## License
 
 DolphinPort is licensed under the [MIT License](LICENSE).
+
+
+Native setup: `cargo install cargo-ndk --version 4.1.2 --locked`. The Gradle preBuild task builds and packages arm64 Rust with Cargo.lock. Debug APKs are the unsigned-release CI alternative; release tasks require valid private signing material and never use debug signing. Persistence runs on a dedicated Dart isolate. The local-record button removes saved logins/users; login identifiers are replaced with `demo-login`. Android backup is disabled. This app stores demo data and does not authenticate financial accounts.

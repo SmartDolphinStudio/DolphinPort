@@ -45,7 +45,11 @@ pub fn dispatch(method: &str, params: Value) -> Value {
             Err(error) => Err(error.to_string()),
         },
 
-        "auth.listUsers" => db::list_users(),
+        "auth.listUsers" => db::list_users_page(
+            params.get("limit").and_then(Value::as_i64).unwrap_or(50),
+            params.get("after_id").and_then(Value::as_i64).unwrap_or(0),
+        ),
+        "db.clearPersonalData" => db::clear_personal_data(),
 
         _ => Err(format!("unknown method '{method}'")),
     };

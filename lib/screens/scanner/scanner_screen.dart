@@ -246,10 +246,10 @@ class _CornerPainter extends CustomPainter {
     final path = Path();
 
     // Determine the two edges that meet at this corner.
-    final isTop = alignment == Alignment.topLeft ||
-        alignment == Alignment.topRight;
-    final isLeft = alignment == Alignment.topLeft ||
-        alignment == Alignment.bottomLeft;
+    final isTop =
+        alignment == Alignment.topLeft || alignment == Alignment.topRight;
+    final isLeft =
+        alignment == Alignment.topLeft || alignment == Alignment.bottomLeft;
 
     final startX = isLeft ? 0.0 : w;
     final startY = isTop ? 0.0 : h;

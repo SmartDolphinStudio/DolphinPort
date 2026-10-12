@@ -54,7 +54,5 @@ class Transaction {
 
   /// Stable seed used for deterministic, per-transaction calculations.
   String get stableSeed =>
-      id.isNotEmpty
-          ? id
-          : '$title|${timestamp.microsecondsSinceEpoch}|$amount';
+      id.isNotEmpty ? id : '$title|${timestamp.microsecondsSinceEpoch}|$amount';
 }

@@ -123,16 +123,58 @@ class InMemoryWalletRepository implements WalletRepository {
   double totalExpense() => MockData.totalExpense;
 
   @override
-  List<MonthPoint> monthlySeries() => MockData.monthly;
+  List<MonthPoint> monthlySeries() {
+    final values = <String, List<double>>{};
+    for (final t in MockData.transactions) {
+      final key =
+          '${t.timestamp.year}-${t.timestamp.month.toString().padLeft(2, '0')}';
+      final point = values.putIfAbsent(key, () => [0, 0]);
+      point[t.isIncome ? 0 : 1] += t.amount;
+    }
+    final keys = values.keys.toList()..sort();
+    return keys
+        .map((k) => MonthPoint(k, values[k]![0], values[k]![1]))
+        .toList();
+  }
 
   @override
-  List<CategorySlice> expenseSlices() => MockData.categorySlices;
+  List<CategorySlice> expenseSlices() {
+    final total = totalExpense();
+    return _ranking(TxType.expense)
+        .map(
+          (r) => CategorySlice(
+            r.label,
+            total == 0 ? 0 : r.amount / total,
+            r.color,
+          ),
+        )
+        .toList();
+  }
 
   @override
-  List<RankItem> expenseRanking() => MockData.expenseRank;
+  List<RankItem> expenseRanking() => _ranking(TxType.expense);
 
   @override
-  List<RankItem> incomeRanking() => MockData.incomeRank;
+  List<RankItem> incomeRanking() => _ranking(TxType.income);
+  List<RankItem> _ranking(TxType type) {
+    final totals = <String, double>{};
+    final icons = <String, IconData>{};
+    for (final t in MockData.transactions.where((t) => t.type == type)) {
+      totals[t.category] = (totals[t.category] ?? 0) + t.amount;
+      icons[t.category] = t.icon;
+    }
+    final keys = totals.keys.toList()
+      ..sort((a, b) => totals[b]!.compareTo(totals[a]!));
+    return [
+      for (final key in keys)
+        RankItem(
+          key,
+          totals[key]!,
+          Colors.primaries[keys.indexOf(key) % Colors.primaries.length],
+          icons[key]!,
+        ),
+    ];
+  }
 }
 
 /// Shared repository instance used by the application.

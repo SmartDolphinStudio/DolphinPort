@@ -1,51 +1,97 @@
-// DolphinPort — an Android-only digital wallet front-end for learning and demonstration.
-// Copyright (c) 2026 SmartDolphin Studio · Author: Astraeus
-
+import 'dart:isolate';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
-
 import 'native_core.dart';
 
-/// Application-facing persistence API backed by the Rust core and SQLite.
-///
-/// This is the only layer the screens should use; it hides the JSON transport
-/// and becomes a safe no-op when the native library is unavailable.
+void _nativeWorker(SendPort startup) {
+  final requests = ReceivePort();
+  startup.send(requests.sendPort);
+  requests.listen((dynamic message) {
+    final data = message as List<dynamic>;
+    final reply = data[0] as SendPort;
+    try {
+      reply.send(
+        NativeCore.instance.call(
+          data[1] as String,
+          data[2] as Map<String, dynamic>,
+        ),
+      );
+    } catch (error) {
+      reply.send({'ok': false, 'error': error.toString()});
+    }
+  });
+}
+
 class NativeStore {
   NativeStore._();
+  static final instance = NativeStore._();
+  final status = ValueNotifier<String>('Persistence not initialised');
+  Future<SendPort>? _worker;
+  Future<SendPort> _start() async {
+    final ready = ReceivePort();
+    await Isolate.spawn(_nativeWorker, ready.sendPort);
+    final port = await ready.first as SendPort;
+    ready.close();
+    return port;
+  }
 
-  /// Shared singleton.
-  static final NativeStore instance = NativeStore._();
-
-  /// Opens (or creates) the local database in private application storage.
-  /// Safe to call once at startup; returns whether it succeeded.
-  Future<bool> initialise() async {
-    if (defaultTargetPlatform != TargetPlatform.android) return false;
+  Future<Map<String, dynamic>?> _request(
+    String method,
+    Map<String, dynamic> params,
+  ) async {
     try {
-      final directory = await getApplicationSupportDirectory();
-      final path = '${directory.path}/dolphinport.db';
-      final response = NativeCore.instance.call('db.migrate', {'path': path});
-      return response?['ok'] == true;
-    } catch (_) {
+      final worker = await (_worker ??= _start());
+      final reply = ReceivePort();
+      worker.send([reply.sendPort, method, params]);
+      final result = await reply.first;
+      reply.close();
+      if (result is! Map<String, dynamic> || result['ok'] != true) {
+        status.value =
+            'Local storage failed: ${result is Map ? result['error'] : 'no response'}';
+        return null;
+      }
+      status.value = 'Local storage ready';
+      return result;
+    } catch (error) {
+      status.value = 'Local storage unavailable: $error';
+      return null;
+    }
+  }
+
+  Future<bool> initialise() async {
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      status.value = 'Local persistence disabled on this platform';
+      return false;
+    }
+    try {
+      final dir = await getApplicationSupportDirectory();
+      return await _request('db.migrate', {
+            'path': '${dir.path}/dolphinport.db',
+          }) !=
+          null;
+    } catch (error) {
+      status.value = 'Local storage unavailable: $error';
       return false;
     }
   }
 
-  /// Records an authentication attempt. The demo authentication always
-  /// succeeds, so the record is stored as successful.
-  void recordLogin(String identifier, {String method = 'password'}) {
-    NativeCore.instance.call('auth.recordLogin', {
-      'identifier': identifier,
+  Future<void> recordLogin(
+    String identifier, {
+    String method = 'password',
+  }) async {
+    await _request('auth.recordLogin', {
+      'identifier': 'demo-login',
       'method': method,
       'success': true,
     });
   }
 
-  /// Returns the most recent login records, or `null` when unavailable.
-  List<dynamic>? listLogins({int limit = 20}) {
-    final response = NativeCore.instance.call('auth.listLogins', {
-      'limit': limit,
-    });
-    if (response?['ok'] != true) return null;
-    return response!['data'] as List<dynamic>;
+  Future<List<dynamic>?> listLogins({int limit = 20}) async {
+    final result = await _request('auth.listLogins', {'limit': limit});
+    return result?['data'] as List<dynamic>?;
+  }
+
+  Future<void> clearPersonalData() async {
+    await _request('db.clearPersonalData', {});
   }
 }

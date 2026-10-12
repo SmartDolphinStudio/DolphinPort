@@ -46,8 +46,9 @@ class NativeCore {
           .lookup<NativeFunction<FreeNative>>('dp_free')
           .asFunction<FreeDart>();
       _available = true;
-    } catch (_) {
+    } catch (error) {
       _available = false;
+      throw StateError("Native library failed to load: $error");
     }
     return _available;
   }
@@ -68,6 +69,9 @@ class NativeCore {
       calloc.free(requestPointer);
     }
 
+    if (responsePointer == nullptr) {
+      throw StateError("Native core returned nullptr");
+    }
     String text;
     try {
       text = responsePointer.toDartString();

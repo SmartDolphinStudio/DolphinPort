@@ -102,16 +102,16 @@ void main() {
       final income = series.fold<double>(0, (sum, m) => sum + m.income);
       final expense = series.fold<double>(0, (sum, m) => sum + m.expense);
 
-      expect(income, 37900);
-      expect(expense, 34900);
+      expect(income, repository.totalIncome());
+      expect(expense, repository.totalExpense());
     });
 
-    test('sums the rankings to 6,800', () {
+    test('rankings agree with the ledger totals', () {
       double amountSum(List<RankItem> items) =>
           items.fold<double>(0, (sum, item) => sum + item.amount);
 
-      expect(amountSum(repository.incomeRanking()), 6800);
-      expect(amountSum(repository.expenseRanking()), 6800);
+      expect(amountSum(repository.incomeRanking()), repository.totalIncome());
+      expect(amountSum(repository.expenseRanking()), repository.totalExpense());
     });
 
     test('sums the expense slices to one', () {

@@ -60,10 +60,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       message: 'Your password has been changed. Please sign in again.',
     );
     if (confirmed == true && mounted) {
-      Navigator.of(context).pushNamedAndRemoveUntil(
-        RouteNames.login,
-        (route) => false,
-      );
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(RouteNames.login, (route) => false);
     }
   }
 

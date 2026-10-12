@@ -26,7 +26,9 @@ pub fn migrate(path: &str) -> Result<serde_json::Value, String> {
     connection
         .pragma_update(None, "foreign_keys", "ON")
         .map_err(|e| e.to_string())?;
-    connection.execute_batch(SCHEMA).map_err(|e| e.to_string())?;
+    connection
+        .execute_batch(SCHEMA)
+        .map_err(|e| e.to_string())?;
 
     *holder().lock().map_err(|e| e.to_string())? = Some(connection);
     Ok(serde_json::json!({ "schema_version": SCHEMA_VERSION }))
@@ -41,12 +43,7 @@ pub fn record_login(params: RecordLoginParams) -> Result<serde_json::Value, Stri
                 "INSERT INTO login_records (identifier, method, success, created_at)
                  VALUES (?1, ?2, ?3, ?4)
                  RETURNING id",
-                rusqlite::params![
-                    params.identifier,
-                    params.method,
-                    i64::from(params.success),
-                    now,
-                ],
+                rusqlite::params!["demo-login", params.method, i64::from(params.success), now,],
                 |row| row.get::<_, i64>(0),
             )
             .map(|id| serde_json::json!({ "id": id }))
@@ -56,6 +53,9 @@ pub fn record_login(params: RecordLoginParams) -> Result<serde_json::Value, Stri
 
 /// Lists the most recent login records.
 pub fn list_logins(limit: i64) -> Result<serde_json::Value, String> {
+    if !(1..=100).contains(&limit) {
+        return Err("limit must be between 1 and 100".into());
+    }
     with_connection(|connection| {
         let mut statement = connection
             .prepare(
@@ -87,13 +87,7 @@ pub fn upsert_user(params: UpsertUserParams) -> Result<serde_json::Value, String
                     phone = excluded.phone,
                     username = excluded.username
                  RETURNING id",
-                rusqlite::params![
-                    params.uid,
-                    params.email,
-                    params.phone,
-                    params.username,
-                    now,
-                ],
+                rusqlite::params![params.uid, params.email, params.phone, params.username, now,],
                 |row| row.get::<_, i64>(0),
             )
             .map(|id| serde_json::json!({ "id": id }))
@@ -103,15 +97,21 @@ pub fn upsert_user(params: UpsertUserParams) -> Result<serde_json::Value, String
 
 /// Lists all remembered users.
 pub fn list_users() -> Result<serde_json::Value, String> {
+    list_users_page(100, 0)
+}
+pub fn list_users_page(limit: i64, after_id: i64) -> Result<serde_json::Value, String> {
+    if !(1..=100).contains(&limit) || after_id < 0 {
+        return Err("invalid pagination".into());
+    }
     with_connection(|connection| {
         let mut statement = connection
             .prepare(
                 "SELECT id, uid, email, phone, username, created_at
-                 FROM users ORDER BY id ASC",
+                 FROM users WHERE id > ?2 ORDER BY id ASC LIMIT ?1",
             )
             .map_err(|e| e.to_string())?;
         let rows = statement
-            .query_map([], map_user)
+            .query_map(rusqlite::params![limit, after_id], map_user)
             .map_err(|e| e.to_string())?;
         let mut users = Vec::new();
         for row in rows {
@@ -123,9 +123,7 @@ pub fn list_users() -> Result<serde_json::Value, String> {
 
 /// Runs [action] against the current connection, reporting a clear error when
 /// the database has not been initialised.
-fn with_connection<T>(
-    action: impl FnOnce(&Connection) -> Result<T, String>,
-) -> Result<T, String> {
+fn with_connection<T>(action: impl FnOnce(&Connection) -> Result<T, String>) -> Result<T, String> {
     let guard = holder().lock().map_err(|e| e.to_string())?;
     match guard.as_ref() {
         Some(connection) => action(connection),
@@ -184,3 +182,33 @@ CREATE TABLE IF NOT EXISTS login_records (
     created_at TEXT NOT NULL
 );
 "#;
+
+pub fn clear_personal_data() -> Result<serde_json::Value, String> {
+    with_connection(|connection| {
+        connection
+            .execute_batch("BEGIN; DELETE FROM login_records; DELETE FROM users; COMMIT; VACUUM;")
+            .map_err(|e| e.to_string())?;
+        Ok(serde_json::json!({"cleared":true}))
+    })
+}
+#[cfg(test)]
+mod audit_tests {
+    use super::*;
+    #[test]
+    fn database_boundaries_and_privacy() {
+        migrate(":memory:").unwrap();
+        record_login(RecordLoginParams {
+            identifier: "private@example.com".into(),
+            method: "demo".into(),
+            success: true,
+        })
+        .unwrap();
+        let rows = list_logins(20).unwrap();
+        assert_eq!(rows[0]["identifier"], "demo-login");
+        assert!(list_logins(-1).is_err());
+        assert!(list_logins(101).is_err());
+        assert!(list_users_page(1, -1).is_err());
+        clear_personal_data().unwrap();
+        assert!(list_logins(20).unwrap().as_array().unwrap().is_empty());
+    }
+}

@@ -21,8 +21,7 @@ Future<Country?> showCountryPickerSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
     ),
-    builder: (sheetContext) =>
-        _CountryPickerSheet(selected: selected),
+    builder: (sheetContext) => _CountryPickerSheet(selected: selected),
   );
 }
 
@@ -161,7 +160,8 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                         itemCount: matches.length,
                         itemBuilder: (context, index) {
                           final country = matches[index];
-                          final isSelected = country.isoCode == _selected.isoCode;
+                          final isSelected =
+                              country.isoCode == _selected.isoCode;
                           return InkWell(
                             onTap: () {
                               setState(() => _selected = country);
@@ -174,7 +174,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                               ),
                               child: Row(
                                 children: [
-                                  Text(country.flag, style: const TextStyle(fontSize: 20)),
+                                  Text(
+                                    country.flag,
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(

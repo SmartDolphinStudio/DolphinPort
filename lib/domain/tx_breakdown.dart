@@ -134,8 +134,12 @@ class BreakdownCalculator {
     // ── Fees the customer actually pays, included in the gross amount ──────
     final fees = <FeeLine>[];
     if (tx.crossBorder) {
-      fees.add(FeeLine('Cross-border acquirer fee', roundToCents(gross * 0.010)));
-      fees.add(FeeLine('Currency conversion margin', roundToCents(gross * 0.008)));
+      fees.add(
+        FeeLine('Cross-border acquirer fee', roundToCents(gross * 0.010)),
+      );
+      fees.add(
+        FeeLine('Currency conversion margin', roundToCents(gross * 0.008)),
+      );
     }
     if (category == TxCategory.p2pTransfer) {
       fees.add(
@@ -145,7 +149,9 @@ class BreakdownCalculator {
         ),
       );
     }
-    final feeTotal = roundToCents(fees.fold(0, (sum, line) => sum + line.amount));
+    final feeTotal = roundToCents(
+      fees.fold(0, (sum, line) => sum + line.amount),
+    );
 
     // ── Indirect tax, tax-inclusive within the remaining amount ────────────
     final taxes = <TaxLine>[];
@@ -160,7 +166,9 @@ class BreakdownCalculator {
     }
 
     // Reconcile to the gross exactly, absorbing any rounding on the net line.
-    final taxTotal = roundToCents(taxes.fold(0, (sum, line) => sum + line.amount));
+    final taxTotal = roundToCents(
+      taxes.fold(0, (sum, line) => sum + line.amount),
+    );
     net = roundToCents(gross - feeTotal - taxTotal);
 
     // ── Cross-border settlement information ────────────────────────────────

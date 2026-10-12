@@ -132,7 +132,8 @@ class _LoginScreenState extends State<LoginScreen>
       await showAuthDialog(
         context,
         title: 'Cannot sign up',
-        message: 'Please enter your phone number, a password and the six-digit code.',
+        message:
+            'Please enter your phone number, a password and the six-digit code.',
       );
       return;
     }
@@ -209,15 +210,12 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              ...isLogin
-                                  ? _loginFields()
-                                  : _registerFields(),
+                              ...isLogin ? _loginFields() : _registerFields(),
                               const Spacer(),
                               _bottomLink(isLogin),
                               SizedBox(
                                 height:
-                                    12 +
-                                    MediaQuery.of(context).padding.bottom,
+                                    12 + MediaQuery.of(context).padding.bottom,
                               ),
                             ],
                           ),

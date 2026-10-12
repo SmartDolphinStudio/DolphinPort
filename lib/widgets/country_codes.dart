@@ -20,10 +20,9 @@ class Country {
     const int regionalIndicatorA = 0x1F1E6;
     const int uppercaseA = 65;
     return String.fromCharCodes(
-      isoCode
-          .toUpperCase()
-          .codeUnits
-          .map((unit) => regionalIndicatorA + unit - uppercaseA),
+      isoCode.toUpperCase().codeUnits.map(
+        (unit) => regionalIndicatorA + unit - uppercaseA,
+      ),
     );
   }
 }

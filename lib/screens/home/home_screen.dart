@@ -1,3 +1,4 @@
+import '../../services/native_store.dart';
 // DolphinPort — an Android-only digital wallet front-end for learning and demonstration.
 // Copyright (c) 2026 SmartDolphin Studio · Author: Astraeus
 
@@ -41,7 +42,8 @@ class _HomeScreenState extends State<HomeScreen>
     );
     _balanceController.addListener(() {
       setState(
-        () => _balance = kDemoBalance * _balanceController.value - _scannedSpend,
+        () =>
+            _balance = kDemoBalance * _balanceController.value - _scannedSpend,
       );
     });
     // Start the balance animation after the first frame, rather than during
@@ -184,7 +186,36 @@ class _HomeScreenState extends State<HomeScreen>
                               onTap: _openScanner,
                             ),
                             const SizedBox(width: 8),
-                            _circleButton(Icons.add),
+                            ValueListenableBuilder<String>(
+                              valueListenable: NativeStore.instance.status,
+                              builder: (context, status, _) =>
+                                  PopupMenuButton<String>(
+                                    tooltip: status,
+                                    icon: Icon(
+                                      Icons.storage,
+                                      color: status.contains('failed')
+                                          ? Colors.red
+                                          : Colors.white,
+                                      size: 18,
+                                    ),
+                                    onSelected: (value) {
+                                      if (value == 'clear') {
+                                        NativeStore.instance
+                                            .clearPersonalData();
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem<String>(
+                                        enabled: false,
+                                        child: Text(status),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: 'clear',
+                                        child: Text('Clear local records'),
+                                      ),
+                                    ],
+                                  ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),

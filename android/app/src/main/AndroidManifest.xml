@@ -2,7 +2,7 @@
     <!-- local_auth: the app only invokes the system biometric UI and never
          reads biometric data itself. -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
-    <application
+    <application android:allowBackup="false" android:fullBackupContent="false"
         android:label="DolphinPort"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

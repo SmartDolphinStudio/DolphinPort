@@ -10,7 +10,11 @@ import 'package:dolphinport/domain/tx_breakdown.dart';
 import 'package:dolphinport/domain/tx_category.dart';
 import 'package:dolphinport/models/transaction.dart';
 
-Transaction _expense(double amount, TxCategory category, {bool crossBorder = false}) {
+Transaction _expense(
+  double amount,
+  TxCategory category, {
+  bool crossBorder = false,
+}) {
   return Transaction(
     title: 'Counterparty',
     subtitle: '',
@@ -80,8 +84,11 @@ void main() {
           final reconciled = roundToCents(
             breakdown.net + breakdown.taxTotal + breakdown.feeTotal,
           );
-          expect(reconciled, closeTo(gross, 0.001),
-              reason: '${category.code} at $gross');
+          expect(
+            reconciled,
+            closeTo(gross, 0.001),
+            reason: '${category.code} at $gross',
+          );
         }
       }
     });

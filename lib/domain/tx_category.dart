@@ -21,17 +21,37 @@ enum TxCategory {
   investment('investment', 'Investment', Icons.trending_up_rounded, true),
 
   // ── Outgoing ────────────────────────────────────────────────────────────
-  groceries('groceries', 'Groceries', Icons.local_grocery_store_outlined, false),
+  groceries(
+    'groceries',
+    'Groceries',
+    Icons.local_grocery_store_outlined,
+    false,
+  ),
   dining('dining', 'Dining', Icons.restaurant_outlined, false),
   transport('transport', 'Transport', Icons.directions_bus_outlined, false),
   fuel('fuel', 'Fuel', Icons.local_gas_station_outlined, false),
   shopping('shopping', 'Shopping', Icons.shopping_bag_outlined, false),
-  digitalGoods('digital_goods', 'Digital goods', Icons.sports_esports_outlined, false),
-  subscription('subscription', 'Subscription', Icons.subscriptions_outlined, false),
+  digitalGoods(
+    'digital_goods',
+    'Digital goods',
+    Icons.sports_esports_outlined,
+    false,
+  ),
+  subscription(
+    'subscription',
+    'Subscription',
+    Icons.subscriptions_outlined,
+    false,
+  ),
   utilities('utilities', 'Utilities', Icons.receipt_long_outlined, false),
   travel('travel', 'Travel', Icons.flight_takeoff_outlined, false),
   healthcare('healthcare', 'Healthcare', Icons.local_hospital_outlined, false),
-  entertainment('entertainment', 'Entertainment', Icons.confirmation_number_outlined, false),
+  entertainment(
+    'entertainment',
+    'Entertainment',
+    Icons.confirmation_number_outlined,
+    false,
+  ),
   p2pTransfer('p2p_transfer', 'Peer-to-peer transfer', Icons.swap_horiz, false),
   professionalServices(
     'professional_services',

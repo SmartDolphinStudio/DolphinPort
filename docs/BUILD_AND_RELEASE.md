@@ -5,10 +5,10 @@ release is produced.
 
 ## Prerequisites
 
-- Flutter 3.47 (stable) with Dart 3.13 or newer
+- Flutter 3.44.6 (stable) with Dart 3.12 or newer
 - JDK 17
-- Android SDK with platform 37 and build tools 37.0.0
-- Rust 1.80 or newer, only for the placeholder service
+- Android SDK with platform 37 and build tools 37.0.0; NDK 28.2.13676358
+- Rust toolchain in rust/rust-toolchain.toml and cargo-ndk 4.1.2, required for native SQLite
 
 Install the dependencies:
 
@@ -53,18 +53,16 @@ keytool -genkeypair -v \
   -alias upload -keyalg RSA -keysize 2048 -validity 10000
 ```
 
-When `key.properties` is absent, the release build falls back to the debug
-signing configuration. This keeps continuous integration green, but such a
-build must not be published as a formal release.
+When `key.properties` is absent or incomplete, release tasks fail. CI validates a debug APK. A release package requires the separate private release signing key.
 
 ## Continuous Integration
 
-- The **CI** workflow runs formatting, analysis, tests and an unsigned
-  release build on every push and pull request. It also runs Rust formatting,
+- The **CI** workflow runs formatting, analysis, tests and a debug
+  APK build on every push and pull request. It also runs Rust formatting,
   clippy and checks.
 - The **Release** workflow runs when a tag matching `v*` is pushed. It
   decodes the keystore from repository secrets, builds a signed APK and
-  publishes it to a GitHub release.
+  verifies its signature and digest. Publication is a separate release action.
 
 Configure the following repository secrets for signed releases:
 
@@ -92,3 +90,10 @@ If a keystore or its password is exposed, treat it as compromised:
 2. Remove the exposed material from any distributed archive and, where
    practical, from history.
 3. Inform users and replace previously published artefacts.
+
+
+Native setup: `cargo install cargo-ndk --version 4.1.2 --locked`. The Gradle preBuild task builds and packages arm64 Rust with Cargo.lock. Debug APKs are the unsigned-release CI alternative; release tasks require valid private signing material and never use debug signing. Persistence runs on a dedicated Dart isolate. The local-record button removes saved logins/users; login identifiers are replaced with `demo-login`. Android backup is disabled. This app stores demo data and does not authenticate financial accounts.
+
+## SDK package naming
+
+Google publishes API 37 as `platforms;android-37.0`. Install that exact package, build-tools 37.0.0 and the pinned NDK. On hosts that resolve integer compileSdk 37 to `platforms/android-37`, the CI creates a symlink to the same official android-37.0 platform. It does not change the API level or use a third-party platform. See the [runner-image maintainers’ explanation](https://github.com/actions/runner-images/issues/13859) and [SDK package manager documentation](https://developer.android.com/tools/sdkmanager).

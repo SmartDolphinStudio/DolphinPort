@@ -12,21 +12,32 @@ use crate::rpc;
 /// `{ "method": "...", "params": { ... } }` and returns a heap-allocated,
 /// null-terminated JSON response. The caller **must** release the returned
 /// pointer with [dp_free]; otherwise the allocation leaks.
+///
+/// # Safety
+/// A non-null request must point to a readable, NUL-terminated UTF-8 buffer
+/// for the duration of this call. The returned allocation must be freed once.
 #[no_mangle]
 pub unsafe extern "C" fn dp_call(request: *const c_char) -> *mut c_char {
-    let response = if request.is_null() {
-        json!({ "ok": false, "error": "null request" })
-    } else {
-        match CStr::from_ptr(request).to_str() {
-            Ok(text) => handle(text),
-            Err(_) => json!({ "ok": false, "error": "invalid UTF-8 request" }),
-        }
-    };
-    into_c_string(response)
+    std::panic::catch_unwind(|| {
+        let response = if request.is_null() {
+            json!({ "ok": false, "error": "null request" })
+        } else {
+            match CStr::from_ptr(request).to_str() {
+                Ok(text) => handle(text),
+                Err(_) => json!({ "ok": false, "error": "invalid UTF-8 request" }),
+            }
+        };
+        into_c_string(response)
+    })
+    .unwrap_or_else(|_| into_c_string(json!({"ok":false,"error":"native panic contained"})))
 }
 
 /// Reclaims a string previously returned by [dp_call]. Passing a null pointer
 /// is a no-op.
+///
+/// # Safety
+/// A non-null pointer must be an unfreed pointer returned by dp_call. Do not
+/// pass another allocator's pointer or release an allocation more than once.
 #[no_mangle]
 pub unsafe extern "C" fn dp_free(pointer: *mut c_char) {
     if pointer.is_null() {

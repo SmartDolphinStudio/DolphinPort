@@ -71,7 +71,8 @@ class DetailPlanBuilder {
     final txId = tx.id.isNotEmpty
         ? tx.id
         : 'TX${(seed & 0x7FFFFFFF).toString().padLeft(10, '0')}';
-    final orderNo = 'MO${((seed >> 5) & 0x7FFFFFFF).toString().padLeft(9, '0')}';
+    final orderNo =
+        'MO${((seed >> 5) & 0x7FFFFFFF).toString().padLeft(9, '0')}';
 
     final date =
         '${tx.timestamp.year}-'
@@ -95,7 +96,10 @@ class DetailPlanBuilder {
         DetailRow('Item', item),
         DetailRow('Merchant', tx.title),
         const DetailRow('Acquirer', 'DolphinPort Demo Acquiring Bank'),
-        DetailRow('Classification', '${category.label} · ${resolution.source.label}'),
+        DetailRow(
+          'Classification',
+          '${category.label} · ${resolution.source.label}',
+        ),
         DetailRow('Confidence', confidence),
         const DetailRow('Payment method', 'Visa •• 4242'),
         DetailRow('Transaction ID', txId),
@@ -110,7 +114,10 @@ class DetailPlanBuilder {
       sections.add(
         DetailSection('Cross-border settlement', [
           DetailRow('Billing currency', fx.currency),
-          DetailRow('Foreign amount', _formatForeign(fx.foreignAmount, decimals, fx.currency)),
+          DetailRow(
+            'Foreign amount',
+            _formatForeign(fx.foreignAmount, decimals, fx.currency),
+          ),
           DetailRow('Exchange rate', '1 USD = ${fx.rate} ${fx.currency}'),
           DetailRow('Conversion margin', formatUsd(fx.margin)),
         ]),
